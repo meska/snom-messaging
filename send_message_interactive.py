@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-Script di esempio per inviare messaggi tramite il sistema Snom DECT.
-Questo script fornisce un'interfaccia semplice per l'invio di messaggi.
+Example script for sending messages via the Snom DECT system.
+This script provides a simple interface for sending messages.
 """
 
 import logging
@@ -11,130 +11,130 @@ import sys
 
 from send_message import MessageSender
 
-# Aggiungi il percorso del modulo send_message
+# Add the send_message module path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 
 def send_simple_message():
     """
-    Interfaccia semplice per inviare un messaggio.
+    Simple interface for sending a message.
     """
-    print("=== Sistema di Invio Messaggi Snom DECT ===\n")
+    print("=== Snom DECT Message Sending System ===\n")
 
-    # Chiedi i parametri all'utente
-    to_ext = input("Inserisci l'estensione destinatario: ").strip()
+    # Ask user for parameters
+    to_ext = input("Enter recipient extension: ").strip()
     if not to_ext:
-        print("❌ Estensione destinatario obbligatoria!")
+        print("❌ Recipient extension required!")
         return False
 
-    message = input("Inserisci il messaggio da inviare: ").strip()
+    message = input("Enter message to send: ").strip()
     if not message:
-        print("❌ Il messaggio non può essere vuoto!")
+        print("❌ Message cannot be empty!")
         return False
 
-    # Parametri opzionali
-    from_name = input("Nome mittente (premi Invio per 'Sistema'): ").strip() or "Sistema"
-    server = input("Indirizzo server (premi Invio per 'localhost'): ").strip() or "localhost"
+    # Optional parameters
+    from_name = input("Sender name (press Enter for 'System'): ").strip() or "System"
+    server = input("Server address (press Enter for 'localhost'): ").strip() or "localhost"
 
-    print("\n📤 Invio messaggio...")
-    print(f"   Da: {from_name}")
-    print(f"   A: {to_ext}")
+    print("\n📤 Sending message...")
+    print(f"   From: {from_name}")
+    print(f"   To: {to_ext}")
     print(f"   Server: {server}")
-    print(f"   Messaggio: {message}\n")
+    print(f"   Message: {message}\n")
 
-    # Configura logging minimale
+    # Configure minimal logging
     logging.basicConfig(level=logging.WARNING)
 
-    # Invia il messaggio
+    # Send the message
     sender = MessageSender(server)
     success, external_id, error = sender.send_message(to_ext, message, from_name=from_name)
 
     if success:
-        print("✅ Messaggio inviato con successo!")
-        print(f"   ID Messaggio: {external_id}")
+        print("✅ Message sent successfully!")
+        print(f"   Message ID: {external_id}")
         return True
     else:
-        print(f"❌ Errore nell'invio: {error}")
+        print(f"❌ Send error: {error}")
         return False
 
 
 def send_batch_messages():
     """
-    Invia più messaggi in batch.
+    Send multiple messages in batch.
     """
-    print("=== Invio Messaggi in Batch ===\n")
+    print("=== Batch Message Sending ===\n")
 
-    server = input("Indirizzo server (premi Invio per 'localhost'): ").strip() or "localhost"
-    from_name = input("Nome mittente (premi Invio per 'Sistema'): ").strip() or "Sistema"
+    server = input("Server address (press Enter for 'localhost'): ").strip() or "localhost"
+    from_name = input("Sender name (press Enter for 'System'): ").strip() or "System"
 
-    print("\nInserisci i messaggi nel formato: estensione,messaggio")
-    print("Premi Invio con una riga vuota per terminare\n")
+    print("\nEnter messages in format: extension,message")
+    print("Press Enter with empty line to finish\n")
 
     messages = []
     while True:
-        line = input("Messaggio (ext,testo): ").strip()
+        line = input("Message (ext,text): ").strip()
         if not line:
             break
 
         if "," not in line:
-            print("❌ Formato non valido. Usa: estensione,messaggio")
+            print("❌ Invalid format. Use: extension,message")
             continue
 
         ext, msg = line.split(",", 1)
         messages.append((ext.strip(), msg.strip()))
 
     if not messages:
-        print("❌ Nessun messaggio da inviare!")
+        print("❌ No messages to send!")
         return False
 
-    print(f"\n📤 Invio {len(messages)} messaggi...")
+    print(f"\n📤 Sending {len(messages)} messages...")
 
-    # Configura logging minimale
+    # Configure minimal logging
     logging.basicConfig(level=logging.WARNING)
 
     sender = MessageSender(server)
     success_count = 0
 
     for ext, msg in messages:
-        print(f"   Invio a {ext}: {msg[:50]}{'...' if len(msg) > 50 else ''}")
+        print(f"   Sending to {ext}: {msg[:50]}{'...' if len(msg) > 50 else ''}")
         success, external_id, error = sender.send_message(ext, msg, from_name=from_name)
 
         if success:
-            print(f"   ✅ Inviato (ID: {external_id})")
+            print(f"   ✅ Sent (ID: {external_id})")
             success_count += 1
         else:
-            print(f"   ❌ Errore: {error}")
+            print(f"   ❌ Error: {error}")
 
-    print(f"\n📊 Risultato: {success_count}/{len(messages)} messaggi inviati con successo")
+    print(f"\n📊 Result: {success_count}/{len(messages)} messages sent successfully")
     return success_count == len(messages)
 
 
 def main():
     """
-    Menu principale.
+    Main menu.
     """
     try:
-        print("Seleziona un'opzione:")
-        print("1. Invia un singolo messaggio")
-        print("2. Invia messaggi in batch")
-        print("3. Esci")
+        print("Select an option:")
+        print("1. Send a single message")
+        print("2. Send batch messages")
+        print("3. Exit")
 
-        choice = input("\nScelta (1-3): ").strip()
+        choice = input("\nChoice (1-3): ").strip()
 
         if choice == "1":
             send_simple_message()
         elif choice == "2":
             send_batch_messages()
         elif choice == "3":
-            print("👋 Arrivederci!")
+            print("👋 Goodbye!")
             return
         else:
-            print("❌ Scelta non valida!")
+            print("❌ Invalid choice!")
 
     except KeyboardInterrupt:
-        print("\n\n👋 Interruzione utente. Arrivederci!")
+        print("\n\n👋 User interruption. Goodbye!")
     except Exception as e:
-        print(f"\n❌ Errore inaspettato: {e}")
+        print(f"\n❌ Unexpected error: {e}")
 
 
 if __name__ == "__main__":

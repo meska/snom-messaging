@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-Script per analizzare i messaggi XML salvati nei log.
-Questo script aiuta a capire il formato corretto dei messaggi per il sistema Snom.
+Script to analyze XML messages saved in logs.
+This script helps understand the correct message format for the Snom system.
 """
 
 import argparse
@@ -14,23 +14,23 @@ import xml.etree.ElementTree as ET
 
 def analyze_xml_file(filepath):
     """
-    Analizza un singolo file XML e estrae le informazioni chiave.
+    Analyzes a single XML file and extracts key information.
 
     Args:
-        filepath: Percorso del file XML da analizzare
+        filepath: Path of the XML file to analyze
 
     Returns:
-        Dictionary con le informazioni estratte
+        Dictionary with extracted information
     """
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Estrai i commenti di intestazione
+        # Extract header comments
         lines = content.split("\n")
         comments = [line for line in lines if line.startswith("<!--")]
 
-        # Trova l'XML (salta i commenti)
+        # Find the XML (skip comments)
         xml_start = None
         for i, line in enumerate(lines):
             if line.startswith("<?xml") or line.startswith("<request") or line.startswith("<response"):
@@ -43,7 +43,7 @@ def analyze_xml_file(filepath):
         xml_content = "\n".join(lines[xml_start:])
         xml_content = xml_content.strip()
 
-        # Rimuovi il carattere null finale se presente
+        # Remove final null character if present
         if xml_content.endswith("\x00"):
             xml_content = xml_content[:-1]
 
@@ -52,7 +52,7 @@ def analyze_xml_file(filepath):
         # Estrai informazioni base
         info = {
             "filename": os.path.basename(filepath),
-            "timestamp": lines[0].replace("<!-- Messaggio ricevuto il ", "").replace(" -->", "") if lines else "",
+            "timestamp": lines[0].replace("<!-- Message received on ", "").replace(" -->", "") if lines else "",
             "source": lines[1].replace("<!-- Provenienza: ", "").replace(" -->", "") if len(lines) > 1 else "",
             "type": lines[2].replace("<!-- Tipo: ", "").replace(" -->", "") if len(lines) > 2 else "",
             "xml_tag": root.tag,
@@ -101,20 +101,20 @@ def analyze_xml_file(filepath):
 
 def analyze_logs_directory(logs_dir="logs"):
     """
-    Analizza tutti i file XML nella directory dei log.
+    Analyzes all XML files in the logs directory.
 
     Args:
-        logs_dir: Directory contenente i log
+        logs_dir: Directory containing the logs
 
     Returns:
-        Lista di dictionary con le informazioni estratte
+        List of dictionaries with extracted information
     """
     if not os.path.exists(logs_dir):
-        print(f"Directory {logs_dir} non trovata!")
+        print(f"Directory {logs_dir} not found!")
         return []
 
     xml_files = glob.glob(os.path.join(logs_dir, "*.xml"))
-    xml_files.sort()  # Ordina per nome (che include timestamp)
+    xml_files.sort()  # Sort by name (which includes timestamp)
 
     results = []
     for filepath in xml_files:
@@ -127,16 +127,16 @@ def analyze_logs_directory(logs_dir="logs"):
 
 def print_summary(results):
     """
-    Stampa un riassunto dei risultati dell'analisi.
+    Prints a summary of the analysis results.
     """
     if not results:
-        print("Nessun messaggio trovato nei log!")
+        print("No messages found in logs!")
         return
 
-    print(f"\n📊 RIASSUNTO ANALISI LOG ({len(results)} messaggi trovati)")
+    print(f"\n📊 LOG ANALYSIS SUMMARY ({len(results)} messages found)")
     print("=" * 60)
 
-    # Raggruppa per tipo
+    # Group by type
     by_type = {}
     for result in results:
         msg_type = result["type"]
@@ -144,16 +144,16 @@ def print_summary(results):
             by_type[msg_type] = []
         by_type[msg_type].append(result)
 
-    print("\n📋 Messaggi per tipo:")
+    print("\n📋 Messages by type:")
     for msg_type, messages in by_type.items():
-        print(f"  • {msg_type}: {len(messages)} messaggi")
+        print(f"  • {msg_type}: {len(messages)} messages")
 
-    print("\n📨 Messaggi con testo:")
+    print("\n📨 Messages with text:")
     text_messages = [r for r in results if r["message_text"] and r["message_text"].strip()]
     for msg in text_messages:
         print(f"  • [{msg['type']}] {msg['from_ext']} → {msg['to_ext']}: '{msg['message_text']}'")
 
-    print("\n🔄 Stati ricevuti:")
+    print("\n🔄 Received statuses:")
     status_messages = [r for r in results if r["status"]]
     for msg in status_messages:
         print(f"  • ID {msg['external_id']}: status {msg['status']}")
@@ -161,37 +161,37 @@ def print_summary(results):
 
 def print_detailed_analysis(results):
     """
-    Stampa un'analisi dettagliata di ogni messaggio.
+    Prints a detailed analysis of each message.
     """
-    print("\n📝 ANALISI DETTAGLIATA")
+    print("\n📝 DETAILED ANALYSIS")
     print("=" * 60)
 
     for i, result in enumerate(results, 1):
         print(f"\n[{i}] {result['filename']}")
         print(f"    Timestamp: {result['timestamp']}")
-        print(f"    Tipo: {result['type']}")
-        print(f"    Provenienza: {result['source']}")
+        print(f"    Type: {result['type']}")
+        print(f"    Source: {result['source']}")
         print(f"    XML Tag: {result['xml_tag']} {result['xml_attributes']}")
         print(f"    External ID: {result['external_id']}")
 
         if result["message_text"]:
-            print(f"    Messaggio: '{result['message_text']}'")
+            print(f"    Message: '{result['message_text']}'")
         if result["from_ext"]:
-            print(f"    Da: {result['from_ext']} ({result['from_name']})")
+            print(f"    From: {result['from_ext']} ({result['from_name']})")
         if result["to_ext"]:
-            print(f"    A: {result['to_ext']}")
+            print(f"    To: {result['to_ext']}")
         if result["status"]:
             print(f"    Status: {result['status']}")
 
 
 def compare_message_formats(results):
     """
-    Confronta i formati dei diversi tipi di messaggio.
+    Compares formats of different message types.
     """
-    print("\n🔍 CONFRONTO FORMATI MESSAGGI")
+    print("\n🔍 MESSAGE FORMAT COMPARISON")
     print("=" * 60)
 
-    # Raggruppa per combinazione tag/type
+    # Group by tag/type combination
     formats = {}
     for result in results:
         key = f"{result['xml_tag']}-{result['xml_attributes'].get('type', 'unknown')}"
@@ -227,43 +227,43 @@ def export_to_json(results, output_file="message_analysis.json"):
             json.dump(results, f, indent=2, ensure_ascii=False)
         print(f"\n💾 Risultati esportati in: {output_file}")
     except Exception as e:
-        print(f"❌ Errore nell'esportazione: {e}")
+        print(f"❌ Export error: {e}")
 
 
 def main():
     """
-    Funzione principale del script di analisi.
+    Main function of the analysis script.
     """
-    parser = argparse.ArgumentParser(description="Analizza i messaggi XML salvati nei log")
-    parser.add_argument("--logs-dir", default="logs", help="Directory contenente i log (default: logs)")
-    parser.add_argument("--detailed", action="store_true", help="Mostra analisi dettagliata")
-    parser.add_argument("--export", help="Esporta risultati in JSON (specifica il nome file)")
-    parser.add_argument("--format-compare", action="store_true", help="Confronta formati messaggi")
+    parser = argparse.ArgumentParser(description="Analyze XML messages saved in logs")
+    parser.add_argument("--logs-dir", default="logs", help="Directory containing logs (default: logs)")
+    parser.add_argument("--detailed", action="store_true", help="Show detailed analysis")
+    parser.add_argument("--export", help="Export results to JSON (specify filename)")
+    parser.add_argument("--format-compare", action="store_true", help="Compare message formats")
 
     args = parser.parse_args()
 
-    print("🔍 Analisi Log Messaggi Snom DECT")
-    print(f"Directory log: {args.logs_dir}")
+    print("🔍 Snom DECT Message Log Analysis")
+    print(f"Log directory: {args.logs_dir}")
 
-    # Analizza i file
+    # Analyze files
     results = analyze_logs_directory(args.logs_dir)
 
-    # Mostra riassunto
+    # Show summary
     print_summary(results)
 
-    # Confronto formati se richiesto
+    # Format comparison if requested
     if args.format_compare:
         compare_message_formats(results)
 
-    # Analisi dettagliata se richiesta
+    # Detailed analysis if requested
     if args.detailed:
         print_detailed_analysis(results)
 
-    # Esportazione se richiesta
+    # Export if requested
     if args.export:
         export_to_json(results, args.export)
 
-    print("\n✅ Analisi completata!")
+    print("\n✅ Analysis completed!")
 
 
 if __name__ == "__main__":

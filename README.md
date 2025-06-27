@@ -17,7 +17,7 @@ This project now includes standalone scripts for sending messages to specific ex
 
 -   **`send_message.py`** - Command-line script for sending messages
 -   **`send_message_interactive.py`** - Interactive script with guided interface
--   **`esempi_utilizzo.py`** - Examples of programmatic usage
+-   **`usage_examples.py`** - Examples of programmatic usage
 
 ### Quick Start - Send a Message
 
@@ -32,7 +32,7 @@ python3 send_message.py 102 "Meeting at 3 PM" --from-name "Secretary" --from-ext
 python3 send_message_interactive.py
 ```
 
-See [INVIO_MESSAGGI.md](INVIO_MESSAGGI.md) for detailed documentation.
+See [MESSAGE_SENDING.md](MESSAGE_SENDING.md) for detailed documentation.
 
 ## How to use it
 
@@ -86,19 +86,19 @@ For example:
     of the alarm functionality of their devices, like opening doors.
     I bet this is also implemented using this interface _;)_
 
-### Logging e Debugging
+### Logging and Debugging
 
-Il sistema ora include logging completo di tutti i messaggi per analisi e debugging:
+The system now includes complete logging of all messages for analysis and debugging:
 
--   **Cartella `logs/`** - Tutti i messaggi XML vengono salvati con timestamp
--   **`analyze_logs.py`** - Script per analizzare i messaggi salvati
--   **`FORMATO_MESSAGGI.md`** - Documentazione dettagliata dei formati XML
+-   **`logs/` folder** - All XML messages are saved with timestamps
+-   **`analyze_logs.py`** - Script to analyze saved messages
+-   **`MESSAGE_FORMATS.md`** - Detailed documentation of XML formats
 
 ```bash
-# Analizza i messaggi nei log
+# Analyze messages in logs
 python3 analyze_logs.py --detailed
 
-# Confronta formati messaggi
+# Compare message formats
 python3 analyze_logs.py --format-compare
 ```
 

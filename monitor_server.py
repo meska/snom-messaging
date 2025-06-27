@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 """
-Script per monitorare in tempo reale l'attività del server di messaggistica.
-Utile per debugging durante i test con telefoni reali.
+Script to monitor messaging server activity in real time.
+Useful for debugging during tests with real phones.
 """
 
 import os
@@ -12,87 +12,87 @@ import time
 
 def monitor_server_logs():
     """
-    Monitora i log del server in tempo reale mostrando solo le righe rilevanti.
+    Monitors server logs in real time showing only relevant lines.
     """
-    print("🔍 Monitoraggio Server Snom DECT")
-    print("Premere Ctrl+C per uscire")
+    print("🔍 Snom DECT Server Monitoring")
+    print("Press Ctrl+C to exit")
     print("=" * 50)
 
     try:
-        # Avvia il server se non è già in esecuzione
+        # Start server if not already running
         try:
             subprocess.run(["pgrep", "-f", "snom_messaging.py"], check=True, capture_output=True)
-            print("✅ Server già in esecuzione")
+            print("✅ Server already running")
         except subprocess.CalledProcessError:
-            print("🚀 Avvio server...")
+            print("🚀 Starting server...")
             server_process = subprocess.Popen(
                 ["python3", "snom_messaging.py"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True
             )
             time.sleep(2)
 
-        # Monitora i file di log se esistono
+        # Monitor log files if they exist
         log_files = []
         if os.path.exists("logs"):
-            print("📁 Monitoraggio cartella logs/")
+            print("📁 Monitoring logs/ folder")
 
-        print("\n📊 Log Server:")
+        print("\n📊 Server Log:")
         print("-" * 30)
 
-        # Per ora monitoriamo semplicemente l'output
+        # For now we simply monitor the output
         while True:
             time.sleep(1)
 
-            # Qui potresti aggiungere monitoring dei file log
-            # o altri controlli specifici
+            # Here you could add log file monitoring
+            # or other specific checks
 
     except KeyboardInterrupt:
-        print("\n\n👋 Monitoring interrotto")
+        print("\n\n👋 Monitoring interrupted")
     except Exception as e:
-        print(f"\n❌ Errore nel monitoring: {e}")
+        print(f"\n❌ Monitoring error: {e}")
 
 
 def show_roaming_table():
     """
-    Mostra lo stato attuale della roaming table.
+    Shows current roaming table status.
     """
-    print("\n📋 Per vedere la roaming table corrente:")
-    print("   1. Controlla i log del server")
-    print("   2. Aspetta il print automatico ogni 2 minuti")
-    print("   3. O invia un messaggio per triggerare activity")
+    print("\n📋 To see current roaming table:")
+    print("   1. Check server logs")
+    print("   2. Wait for automatic print every 2 minutes")
+    print("   3. Or send a message to trigger activity")
 
 
 def show_test_instructions():
     """
-    Mostra le istruzioni per il test con telefoni reali.
+    Shows instructions for testing with real phones.
     """
-    print("\n🧪 ISTRUZIONI TEST TELEFONI REALI")
+    print("\n🧪 REAL PHONE TESTING INSTRUCTIONS")
     print("=" * 40)
-    print("1. 📱 Prendi il telefono con estensione 106")
-    print("2. 💬 Invia un messaggio all'estensione 122")
-    print("3. 👀 Osserva i log per vedere:")
-    print("   • Registrazione di 106 nella roaming table")
-    print("   • Ricezione del messaggio")
-    print("   • Tentativo di invio a 122")
-    print("4. 📱 Se 122 non è registrato, prendi anche quel telefono")
-    print("5. 💬 Fai il login o invia un messaggio da 122")
-    print("6. 🔄 Riprova l'invio da 106 a 122")
-    print("\n💡 Suggerimento: Tieni aperto questo monitoring mentre fai i test!")
+    print("1. 📱 Take phone with extension 106")
+    print("2. 💬 Send message to extension 122")
+    print("3. 👀 Watch logs to see:")
+    print("   • Registration of 106 in roaming table")
+    print("   • Message reception")
+    print("   • Send attempt to 122")
+    print("4. 📱 If 122 is not registered, take that phone too")
+    print("5. 💬 Login or send message from 122")
+    print("6. 🔄 Retry sending from 106 to 122")
+    print("\n💡 Tip: Keep this monitoring open while testing!")
 
 
 def main():
     """
-    Menu principale per il monitoring.
+    Main menu for monitoring.
     """
     while True:
-        print("\n🎛️  MONITORING SNOM DECT")
-        print("1. 🔍 Monitora server in tempo reale")
-        print("2. 📋 Mostra stato roaming table")
-        print("3. 🧪 Mostra istruzioni test")
-        print("4. 📊 Analizza log esistenti")
-        print("5. 🚪 Esci")
+        print("\n🎛️  SNOM DECT MONITORING")
+        print("1. 🔍 Monitor server in real time")
+        print("2. 📋 Show roaming table status")
+        print("3. 🧪 Show test instructions")
+        print("4. 📊 Analyze existing logs")
+        print("5. 🚪 Exit")
 
         try:
-            choice = input("\nScelta (1-5): ").strip()
+            choice = input("\nChoice (1-5): ").strip()
 
             if choice == "1":
                 monitor_server_logs()
@@ -103,16 +103,16 @@ def main():
             elif choice == "4":
                 subprocess.run(["python3", "analyze_logs.py", "--detailed"])
             elif choice == "5":
-                print("👋 Arrivederci!")
+                print("👋 Goodbye!")
                 break
             else:
-                print("❌ Scelta non valida!")
+                print("❌ Invalid choice!")
 
         except KeyboardInterrupt:
-            print("\n\n👋 Interruzione utente")
+            print("\n\n👋 User interruption")
             break
         except Exception as e:
-            print(f"\n❌ Errore: {e}")
+            print(f"\n❌ Error: {e}")
 
 
 if __name__ == "__main__":
