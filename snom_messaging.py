@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 
-import logging
 import asyncio
-import xml.etree.ElementTree as ET
+import logging
 import random
-from messagesystem import MessageSystem
+import xml.etree.ElementTree as ET
+
 from consumer import ConsumerDriver
+from messagesystem import MessageSystem
 from roaming import RoamingMonitor
 
 logger = logging.getLogger(__name__)
 random.seed()
 
+
 def _prettyprint_mlstring(s, output):
-    l = s.split("\n")
+    lines = s.split("\n")
     j = 1
-    for i in l:
+    for i in lines:
         output("{:02} {}".format(j, i))
         j += 1
 
@@ -84,19 +86,16 @@ class UdpServer(asyncio.DatagramProtocol):
                 out_addr = addr
             logger.debug("Outgoing Datagram to {}".format(addr))
             _prettyprint_mlstring(dgram, logger.debug)
-            self._transport.sendto(dgram.encode("UTF-8"), addr)
+            self._transport.sendto(dgram.encode("UTF-8"), addr)  # type: ignore
 
 
-def main():
+async def main():
     logging.basicConfig(level=logging.INFO)
     logger.debug("Begin Setup...")
 
-    loop = asyncio.get_event_loop()
-    sock = loop.create_datagram_endpoint(
-        UdpServer,
-        local_addr=("0.0.0.0", 1300)
-    )
-    transport, protocol = loop.run_until_complete(sock)
+    loop = asyncio.get_running_loop()
+    sock = loop.create_datagram_endpoint(UdpServer, local_addr=("0.0.0.0", 1300))
+    transport, protocol = await sock
 
     roaming_monitor = RoamingMonitor(protocol)
     message_system = MessageSystem(protocol, roaming_monitor)
@@ -104,12 +103,13 @@ def main():
 
     logger.info("Snom Messaging started successfully.")
     try:
-        loop.run_forever()
+        await asyncio.Future()  # run forever
     except KeyboardInterrupt:
         pass
+    finally:
+        transport.close()
+        message_system.close()
 
-    transport.close()
-    message_system.close()
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

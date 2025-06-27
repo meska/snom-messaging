@@ -1,12 +1,10 @@
 import logging
-import asyncio
-import xml.etree.ElementTree as ET
-import random
 import time
+
 logger = logging.getLogger(__name__)
 
-class RoamingMonitor():
 
+class RoamingMonitor:
     def __init__(self, udp_server):
         self._udp_server = udp_server
         self._udp_server.register_driver(self)
@@ -14,7 +12,7 @@ class RoamingMonitor():
         self._locations = {}
 
     def close(self):
-        #TODO: Implement proper shutdown of this function.
+        # TODO: Implement proper shutdown of this function.
         pass
 
     def get_addr(self, number):
@@ -22,9 +20,27 @@ class RoamingMonitor():
             return self._locations[number]["addr"]
         return None
 
+    def get_roaming_table(self):
+        """
+        Restituisce la tabella di roaming attuale per debug.
+        """
+        return dict(self._locations)
+
+    def print_roaming_table(self):
+        """
+        Stampa la tabella di roaming per debug.
+        """
+        if self._locations:
+            logger.info("=== ROAMING TABLE ===")
+            for ext, info in self._locations.items():
+                logger.info(f"  Extension {ext}: {info['addr']} (last seen: {time.ctime(info['time'])})")
+            logger.info("====================")
+        else:
+            logger.info("Roaming table is empty")
+
     def process(self, xml_message, addr):
         if xml_message.tag == "request" and xml_message.attrib["type"] == "systeminfo":
-#                xml_message.tag == "request" and xml_message.attrib["type"] == "alarm": # not sure if this updates only contain connected phones...
+            #                xml_message.tag == "request" and xml_message.attrib["type"] == "alarm": # not sure if this updates only contain connected phones...
             logger.debug("Systeminfo update received")
 
             senderdata = xml_message.find("senderdata")
@@ -39,7 +55,8 @@ class RoamingMonitor():
                         self._locations[element.text]["time"] = time.time()
                 else:
                     logger.info("Added {} on {}".format(element.text, addr))
-                    self._locations[element.text] = { "addr": addr, "time": time.time() }
+                    self._locations[element.text] = {"addr": addr, "time": time.time()}
+                    self.print_roaming_table()  # Mostra la tabella quando si aggiunge qualcuno
 
         if xml_message.tag == "request" and xml_message.attrib["type"] == "login":
             logger.debug("Login event received")
@@ -60,8 +77,7 @@ class RoamingMonitor():
                     self._locations[address.text]["time"] = time.time()
                 else:
                     logger.info("{} logged in on {} (and wasn't known until know...)".format(address.text, addr))
-                    self._locations[address.text] = {"addr": addr, "time": time.time() }
-
-
+                    self._locations[address.text] = {"addr": addr, "time": time.time()}
+                    self.print_roaming_table()  # Mostra la tabella quando qualcuno fa login
 
         return False

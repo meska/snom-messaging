@@ -1,12 +1,12 @@
-import logging
 import asyncio
-import xml.etree.ElementTree as ET
+import logging
 import random
 import time
+
 logger = logging.getLogger(__name__)
 
-class Message():
 
+class Message:
     """
     This class encapsulates a Text-Message with it's metadata.
     """
@@ -32,7 +32,7 @@ class Message():
 
         # This 10-Digit random number will be used as ID, when re-sending
         # the message to it's recipient.
-        self.internal_ext_id = random.randrange(9999999999+1)
+        self.internal_ext_id = random.randrange(9999999999 + 1)
 
     def get_messageresponse(self):
         """
@@ -134,8 +134,8 @@ class Message():
         message = message.replace("{{msg}}", self.message)
         return message
 
-class MessageSystem():
 
+class MessageSystem:
     """
     This dictionary contains known status codes returned from BaseStations
     after sending a message.
@@ -143,6 +143,7 @@ class MessageSystem():
     It contains the following information:
     <statuscode>: (<Log-message String>, <Remove from Queue>)
     """
+
     _snom_message_status = {
         1: ("Message delivered", True),
         11: ("User absent", False),
@@ -166,11 +167,10 @@ class MessageSystem():
         self._roaming_monitor = roaming_monitor
 
     def close(self):
-        #TODO: Implement proper shutdown of this function.
+        # TODO: Implement proper shutdown of this function.
         pass
 
     def process(self, xml_message, addr):
-
         """
         Process a message received via UDP.
 
@@ -238,24 +238,54 @@ class MessageSystem():
         return False
 
     async def process_outbox(self):
-
         """
         Process the queue of outgoing messages.
         """
+        last_roaming_print = 0
 
         while True:
-            # check if any message is to resend
-            for message in self._queue:
-                if (time.time() - message.last_send_try) > 60:
-                    logger.debug("Sending message %s", message.internal_ext_id)
-                    self._udp_server.send_dgram(message.get_message(), self._roaming_monitor.get_addr(message.to_ext))
-                    message.last_send_try = time.time()
+            try:
+                # Mostra periodicamente la roaming table (ogni 2 minuti)
+                if time.time() - last_roaming_print > 120:
+                    self._roaming_monitor.print_roaming_table()
+                    last_roaming_print = time.time()
 
-            # purge all messages older than
-            for message in self._queue:
-                if (time.time() - message.created) > 7*24*60*60:
-                    logger.info("Removing undelivered message from queue: %s", message.internal_ext_id)
+                # check if any message is to resend
+                for message in self._queue:
+                    if (time.time() - message.last_send_try) > 60:
+                        logger.debug("Sending message %s", message.internal_ext_id)
+                        target_addr = self._roaming_monitor.get_addr(message.to_ext)
+                        if target_addr is not None:
+                            try:
+                                self._udp_server.send_dgram(message.get_message(), target_addr)
+                                message.last_send_try = time.time()
+                            except Exception as e:
+                                logger.error("Error sending message %s to %s: %s", message.internal_ext_id, target_addr, e)
+                                message.last_send_try = time.time()  # Avoid continuous retry
+                        else:
+                            logger.warning(
+                                "Cannot send message %s to extension %s: extension not found in roaming table",
+                                message.internal_ext_id,
+                                message.to_ext,
+                            )
+                            message.last_send_try = time.time()  # Update last_send_try to avoid continuous attempts
+
+                # purge all messages older than
+                messages_to_remove = []
+                for message in self._queue:
+                    if (time.time() - message.created) > 7 * 24 * 60 * 60:
+                        logger.info("Removing undelivered message from queue: %s", message.internal_ext_id)
+                        messages_to_remove.append(message)
+
+                # Remove messages outside the iteration to avoid modification during iteration
+                for message in messages_to_remove:
                     self._queue.remove(message)
 
-            await asyncio.sleep(1)
-            continue
+            except Exception as e:
+                logger.error("Error in process_outbox: %s", e)
+
+            try:
+                await asyncio.sleep(1)
+            except Exception as e:
+                logger.error("Error in asyncio.sleep: %s", e)
+                break  # Exit the loop if sleep fails

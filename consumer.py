@@ -1,8 +1,9 @@
 import logging
+
 logger = logging.getLogger(__name__)
 
-class ConsumerDriver():
 
+class ConsumerDriver:
     """
     This Driver consumes all known datagrams
     received via UDP that are not used anywhere else.
@@ -129,4 +130,3 @@ class ConsumerDriver():
             return True
 
         return False
-

@@ -11,6 +11,29 @@ This project uses the proprietary messaging-server interface provided by
 the M700 Basestations (see Webinterface -> Management -> Text Messaging).
 The protocol is completely reverse-engineered by wild guessing.
 
+## New: Message Sending Scripts
+
+This project now includes standalone scripts for sending messages to specific extensions:
+
+-   **`send_message.py`** - Command-line script for sending messages
+-   **`send_message_interactive.py`** - Interactive script with guided interface
+-   **`esempi_utilizzo.py`** - Examples of programmatic usage
+
+### Quick Start - Send a Message
+
+```bash
+# Send a simple message
+python3 send_message.py 101 "Hello, this is a test message"
+
+# Send with custom sender
+python3 send_message.py 102 "Meeting at 3 PM" --from-name "Secretary" --from-ext 100
+
+# Interactive mode
+python3 send_message_interactive.py
+```
+
+See [INVIO_MESSAGGI.md](INVIO_MESSAGGI.md) for detailed documentation.
+
 ## How to use it
 
 I assume you have a working M700 setup (either multicell or not) with a few
@@ -23,18 +46,18 @@ The server will bind to 0.0.0.0:1300 (sorry, no IPv6 here!).
 
 Now setup Text-Messaging in your M700:
 
-* Text Messaging: "Enabled", *Not* "Enabled without server"(!)
-* Text Messaging and Alarm Server: IP of the machine running our server.
-* Text Messaging Port: 1300 (default)
+-   Text Messaging: "Enabled", _Not_ "Enabled without server"(!)
+-   Text Messaging and Alarm Server: IP of the machine running our server.
+-   Text Messaging Port: 1300 (default)
 
 Additionally (for development) I have set the following values.
 These seem to increase the rate of status updates. But your messaging will
 also work without it.
 
-* Text Message Keep Alive: 1
-* Text Messaging Response: 10
-* Text Messaging TTL: 5
-* Terminal Keep Alive: 1
+-   Text Message Keep Alive: 1
+-   Text Messaging Response: 10
+-   Text Messaging TTL: 5
+-   Terminal Keep Alive: 1
 
 Afterwards you need to reboot your DECT basestation (or for multicell all
 basestations in your chain).
@@ -45,11 +68,10 @@ The basestations will now start to send status messages to your server.
 
 This project currently only implements messaging:
 
-* Accept text messages from a phone and sent a confirmation to the sending phone.
-* Accepted text messages are queued for delivery.
-* Regularly the queue is checked for messages to deliver.
-* If a message can not be delivered it is kept and resend later on.
-
+-   Accept text messages from a phone and sent a confirmation to the sending phone.
+-   Accepted text messages are queued for delivery.
+-   Regularly the queue is checked for messages to deliver.
+-   If a message can not be delivered it is kept and resend later on.
 
 ## What comes next
 
@@ -58,8 +80,26 @@ that is made available using this proprietary interface!
 
 For example:
 
-* SNOM's marketing claims the M70 can track bluetooth beacons.
-  Is this information exposed using this interface?
-* Also: SNOM's marketing claims that you can build automation on top
-  of the alarm functionality of their devices, like opening doors.
-  I bet this is also implemented using this interface *;)*
+-   SNOM's marketing claims the M70 can track bluetooth beacons.
+    Is this information exposed using this interface?
+-   Also: SNOM's marketing claims that you can build automation on top
+    of the alarm functionality of their devices, like opening doors.
+    I bet this is also implemented using this interface _;)_
+
+### Logging e Debugging
+
+Il sistema ora include logging completo di tutti i messaggi per analisi e debugging:
+
+-   **Cartella `logs/`** - Tutti i messaggi XML vengono salvati con timestamp
+-   **`analyze_logs.py`** - Script per analizzare i messaggi salvati
+-   **`FORMATO_MESSAGGI.md`** - Documentazione dettagliata dei formati XML
+
+```bash
+# Analizza i messaggi nei log
+python3 analyze_logs.py --detailed
+
+# Confronta formati messaggi
+python3 analyze_logs.py --format-compare
+```
+
+## How to use it
