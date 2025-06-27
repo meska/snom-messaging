@@ -5,6 +5,7 @@ SMS-like communication between SNOM DECT-handsets.
 
 This project has been developed against a M700 basestation (FW 0450.13),
 a M65 (FW 450.13) handset and a M70 (FW 450.11) handset.
+It has also been tested with a M900 basestation (FW IPDECT-V2/07.40/B0104/05-Set-2024).
 This project will probably work with other handsets, too.
 
 This project uses the proprietary messaging-server interface provided by
@@ -101,5 +102,3 @@ python3 analyze_logs.py --detailed
 # Compare message formats
 python3 analyze_logs.py --format-compare
 ```
-
-## How to use it
